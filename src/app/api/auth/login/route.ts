@@ -42,9 +42,24 @@ export async function POST(request: Request) {
 	}
 	if (user.disabled || user.deletedAt) return authError("account_disabled", 403);
 
+	// Admin accounts require mandatory 2FA TOTP:
+	// - If TOTP is not yet set up (first login), enforce 2FA setup before dashboard access.
+	// - If TOTP is set up, enforce TOTP verification on every subsequent authentication.
+	if (user.role === "admin" && !user.totpEnabled) {
+		const challengeToken = await createLoginChallenge(env, user.id);
+		const pending = NextResponse.json({
+			ok: true,
+			mfaSetupRequired: true,
+			challengeToken,
+			email: user.email,
+		});
+		pending.headers.set("Cache-Control", "no-store");
+		return pending;
+	}
+
 	// The password is right but this account requires a second factor: hand
 	// back a short-lived challenge instead of a session.
-	if (user.requireSecondFactor) {
+	if (user.requireSecondFactor || user.role === "admin") {
 		const [passkeys, recoveryCodes] = await Promise.all([
 			countPasskeys(env, user.id),
 			countUnusedRecoveryCodes(env, user.id),

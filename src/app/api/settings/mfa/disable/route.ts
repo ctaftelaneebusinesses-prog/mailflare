@@ -15,6 +15,9 @@ export async function POST(request: Request) {
 	const env = getEnv();
 	const auth = await requireSessionUser(env, request);
 	if (auth.error) return authError("session_expired", 401);
+	if (auth.user.role === "admin") {
+		return NextResponse.json({ error: "Two-factor authentication is mandatory for administrator accounts and cannot be disabled." }, { status: 403 });
+	}
 	const parsed = mfaDisableSchema.safeParse(await readJsonBody(request, 16 * 1024).catch(() => null));
 	if (!parsed.success) return authError("verification_required", 400);
 	// The password path must always present a current authenticator or recovery

@@ -41,11 +41,26 @@ export async function getOutboundProviderConfig(env: CloudflareEnv, fromAddress:
 	const [domain] = hostname
 		? await getDb(env).select({ provider: domains.sendingProvider }).from(domains).where(eq(domains.hostname, hostname)).limit(1)
 		: [];
-	if (!domain || domain.provider === "none") {
-		throw new Error(`Sending is not set up for ${hostname ?? "this domain"}. Choose a sending provider on the Domains page.`);
+
+	// Check if Resend API key is configured in Worker secrets or settings
+	const resendStatus = await getResendKeyStatus(env);
+
+	if (domain?.provider === "ses") {
+		return { provider: "ses", config: await requireAwsConfig(env) };
 	}
-	if (domain.provider === "resend") return { provider: "resend", apiKey: await getResendApiKey(env) };
-	if (domain.provider === "ses") return { provider: "ses", config: await requireAwsConfig(env) };
+	if (domain?.provider === "none") {
+		throw new Error(`Sending is disabled for ${hostname ?? "this domain"}. Enable sending on the Domains page.`);
+	}
+
+	// Prefer Resend API as the default outbound sending provider when key is configured
+	if (resendStatus.configured && resendStatus.apiKey) {
+		return { provider: "resend", apiKey: resendStatus.apiKey };
+	}
+
+	if (domain?.provider === "resend") {
+		return { provider: "resend", apiKey: await getResendApiKey(env) };
+	}
+
 	return { provider: "cloudflare" };
 }
 
@@ -94,11 +109,30 @@ async function sendWithResend(
 			})),
 		}),
 	});
+
+	const responseData = (await response.json().catch(() => null)) as { id?: string; message?: string; name?: string } | null;
+
 	if (!response.ok) {
-		const body = (await response.json().catch(() => null)) as { message?: string } | null;
-		throw new Error(`Resend: ${body?.message ?? `request failed (${response.status})`}`);
+		const status = response.status;
+		const detail = responseData?.message ?? responseData?.name ?? `HTTP ${status}`;
+		if (status === 401) {
+			throw new Error(`Resend API Error (401 Unauthorized): Invalid or revoked API key in Worker secrets.`);
+		}
+		if (status === 422) {
+			throw new Error(`Resend API Error (422 Unprocessable Entity): ${detail}`);
+		}
+		if (status === 429) {
+			throw new Error(`Resend API Rate Limit (429 Too Many Requests): ${detail}`);
+		}
+		if (status >= 500) {
+			throw new Error(`Resend Upstream Service Error (${status}): ${detail}`);
+		}
+		throw new Error(`Resend Error: ${detail}`);
 	}
-	return { messageId };
+
+	const resendId = responseData?.id;
+	console.log(`[Resend Dispatch] Sent email successfully to ${message.to.join(", ")}. Resend ID: ${resendId ?? messageId}`);
+	return { messageId: resendId ?? messageId };
 }
 
 export async function sendThroughProvider(

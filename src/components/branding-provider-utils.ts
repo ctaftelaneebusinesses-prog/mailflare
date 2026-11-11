@@ -1,7 +1,8 @@
 import type { Branding } from "@/lib/branding/types";
+import { CRAFTLANEE_CONFIG } from "@/config/branding";
 
 export const DEFAULT_BRANDING: Branding = {
-	appName: "Mailflare",
+	appName: CRAFTLANEE_CONFIG.appName,
 	hasCustomIcon: false,
 	canCustomizeBranding: false,
 };

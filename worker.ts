@@ -30,6 +30,7 @@ import { runAccountRetention } from "./src/lib/accounts/deletion";
 import { runJmapChangeRetention } from "./src/lib/jmap/changes";
 import { runFollowUpReminders } from "./src/lib/follow-ups/service";
 import { runCalendarReminders } from "./src/lib/calendar/reminders";
+import { checkStorageQuotaForInbound, runStorageAutoClean } from "./src/lib/storage/volume-retention";
 export { RealtimeHub } from "./src/lib/realtime/hub";
 
 export default {
@@ -63,6 +64,11 @@ export default {
 		try {
 			if (message.rawSize > 25 * 1024 * 1024) {
 				message.setReject("Message rejected: raw email exceeds the 25 MiB receiving limit. Send a download link instead.");
+				return;
+			}
+			const quotaCheck = await checkStorageQuotaForInbound(env, message.rawSize);
+			if (!quotaCheck.allowed) {
+				message.setReject(quotaCheck.reason ?? "552 5.2.2 Storage quota exceeded (10 GB Free Tier limit). Message bounced.");
 				return;
 			}
 			// Domain routing rules are resolved here rather than in the queue because reject and
@@ -153,6 +159,7 @@ export default {
 		// Drive trash is emptied once a day, with the 02:00 UTC cron; the 5-minute cron is for queue-like upkeep.
 		if (controller.cron === "0 2 * * *") ctx.waitUntil(runDriveTrashRetention(env, new Date(controller.scheduledTime)));
 		if (controller.cron === "0 2 * * *") ctx.waitUntil(runJmapChangeRetention(env, new Date(controller.scheduledTime)));
+		if (controller.cron === "0 2 * * *") ctx.waitUntil(runStorageAutoClean(env, new Date(controller.scheduledTime)).catch((err) => console.error("Storage auto-clean failed", err)));
 		if (controller.cron === "0 2 * * *") ctx.waitUntil(sweepOrphanedRawMail(env, new Date(controller.scheduledTime)).catch((error) => console.error("Raw mail sweep failed", error)));
 	},
 } satisfies ExportedHandler<CloudflareEnv>;

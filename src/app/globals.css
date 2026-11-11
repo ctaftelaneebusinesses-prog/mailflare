@@ -1,16 +1,91 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap');
 
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-	--color-neutral-500: #6b6b6b;
-	--background: #f6f8fc;
-	--foreground: #202124;
-	--card: #ffffff;
-	--muted: #eef3fb;
-	--border: #dadce0;
-	--primary: #0b57d0;
+	--font-dot-matrix: 'Silkscreen', 'Space Mono', monospace;
+	--craftlanee-red: #D71921;
+	--craftlanee-red-hover: #b5141b;
+	--craftlanee-red-muted: rgba(215, 25, 33, 0.15);
+	--craftlanee-red-glow: 0 0 10px rgba(215, 25, 33, 0.4);
+
+	--color-neutral-500: #737373;
+	--background: #000000;
+	--foreground: #ffffff;
+	--card: #0a0a0a;
+	--muted: #171717;
+	--border: #262626;
+	--primary: #D71921;
 	--primary-foreground: #ffffff;
+}
+
+/* Nothing OS Minimalist Monochrome & Dot-Matrix Styling */
+.font-dot-matrix {
+	font-family: var(--font-dot-matrix);
+}
+
+.text-dot-matrix {
+	font-family: var(--font-dot-matrix);
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+}
+
+.craftlanee-dots-bg {
+	background-image: radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+	background-size: 20px 20px;
+}
+
+.craftlanee-card {
+	background: #0c0c0c;
+	border: 1px solid #242424;
+	border-radius: 1rem;
+	transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.craftlanee-card:hover {
+	border-color: #383838;
+}
+
+.craftlanee-led {
+	display: inline-block;
+	width: 8px;
+	height: 8px;
+	border-radius: 9999px;
+	background-color: #D71921;
+	box-shadow: 0 0 8px rgba(215, 25, 33, 0.8);
+	animation: pulse-led 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse-led {
+	0%, 100% { opacity: 1; transform: scale(1); }
+	50% { opacity: 0.6; transform: scale(0.92); }
+}
+
+.craftlanee-badge {
+	font-family: var(--font-dot-matrix);
+	font-size: 0.65rem;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	padding: 0.2rem 0.5rem;
+	border-radius: 9999px;
+	border: 1px solid #2e2e2e;
+	background: #121212;
+	color: #d4d4d4;
+}
+
+.craftlanee-btn-red {
+	background-color: #D71921;
+	color: #ffffff;
+	font-family: var(--font-dot-matrix);
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	transition: all 0.2s ease;
+}
+
+.craftlanee-btn-red:hover {
+	background-color: #b5141b;
+	box-shadow: 0 0 12px rgba(215, 25, 33, 0.5);
 }
 
 @theme inline {

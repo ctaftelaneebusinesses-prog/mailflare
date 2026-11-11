@@ -7,6 +7,7 @@ import type { TranslationKey } from "@/lib/i18n/types";
 import { AdminUpdateCard } from "@/components/admin-update-card";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { useCurrentUser } from "@/hooks/use-current-user";
+import { CraftlaneeDashboard } from "@/components/admin/craftlanee-dashboard";
 
 type AdminSection = {
 	href: string;
@@ -64,18 +65,6 @@ const sections: AdminSection[] = [
 		icon: KeyRound,
 		permission: "primary",
 	},
-	// {
-	// 	href: "/webhooks",
-	// 	title: "Webhooks",
-	// 	description: "Send mail events to external systems.",
-	// 	icon: Webhook,
-	// },
-	// {
-	// 	href: "/settings/account",
-	// 	title: "Account",
-	// 	description: "View personal account and platform configuration.",
-	// 	icon: Settings,
-	// },
 ];
 
 export default function AdminSettingsPage() {
@@ -91,36 +80,46 @@ export default function AdminSettingsPage() {
 	}
 
 	return (
-		<div>
-			<div className="mb-8">
-				<h1 className="text-2xl md:text-3xl font-medium text-neutral-900">{t("admin.title")}</h1>
-				<p className="mt-2 text-sm text-neutral-500">
-					{t("admin.description")}
-				</p>
-			</div>
-			<div className="grid lg:grid-cols-2 gap-4">
-				{sections.filter(canSee).map((section) => {
-					const Icon = section.icon;
+		<div className="space-y-10">
+			{/* CraftLanee System Metrics & Storage Logs */}
+			<CraftlaneeDashboard />
 
-					return (
-						<Link key={section.href} href={section.href}>
-							<Card className="h-full rounded-3xl border-0 bg-white p-6 transition-colors hover:bg-blue-50/60">
-								<CardHeader className="flex-row items-center gap-4 space-y-0 py-0">
-									<div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 text-blue-700">
-										<Icon className="h-5 w-5" />
-									</div>
-									<h2 className="text-base font-semibold leading-none">{t(section.titleKey)}</h2>
-								</CardHeader>
-								<CardContent className="pt-4">
-									<p className="text-sm text-neutral-500">{t(section.descriptionKey)}</p>
-								</CardContent>
-							</Card>
-						</Link>
-					);
-				})}
+			{/* Administrative Navigation Sections */}
+			<div className="space-y-4">
+				<div className="border-b border-neutral-800 pb-3">
+					<h2 className="text-base font-bold font-mono uppercase tracking-wider text-white">
+						Platform Management Modules
+					</h2>
+					<p className="text-xs text-neutral-400">
+						Configure domains, accounts, mailboxes, and platform settings.
+					</p>
+				</div>
+
+				<div className="grid lg:grid-cols-2 gap-4">
+					{sections.filter(canSee).map((section) => {
+						const Icon = section.icon;
+
+						return (
+							<Link key={section.href} href={section.href}>
+								<Card className="h-full rounded-2xl border border-neutral-800 bg-[#0c0c0c] p-5 transition-all hover:border-neutral-600 hover:bg-[#121212]">
+									<CardHeader className="flex-row items-center gap-4 space-y-0 py-0">
+										<div className="flex h-10 w-10 items-center justify-center rounded-xl border border-neutral-800 bg-neutral-900 text-neutral-300">
+											<Icon className="h-5 w-5" />
+										</div>
+										<h3 className="text-sm font-semibold font-mono text-white tracking-wide">{t(section.titleKey)}</h3>
+									</CardHeader>
+									<CardContent className="pt-3">
+										<p className="text-xs text-neutral-400">{t(section.descriptionKey)}</p>
+									</CardContent>
+								</Card>
+							</Link>
+						);
+					})}
+				</div>
 			</div>
+
 			{user?.isPrimaryAdmin && (
-				<div className="mt-8">
+				<div className="pt-2">
 					<AdminUpdateCard />
 				</div>
 			)}

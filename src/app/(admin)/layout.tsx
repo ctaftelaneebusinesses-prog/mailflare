@@ -57,7 +57,7 @@ export default function DashboardLayout({
           <MailSearchProvider>
           <ShortcutsProvider>
             <RouteTitle />
-          <div className="grid h-dvh grid-cols-[minmax(0,1fr)] md:grid-cols-[var(--sidebar-width)_minmax(0,1fr)] overflow-hidden bg-[#f6f8fc] transition-[grid-template-columns]" style={{ transitionDuration: "var(--sidebar-transition-duration)" }}>
+          <div className="grid h-dvh grid-cols-[minmax(0,1fr)] md:grid-cols-[var(--sidebar-width)_minmax(0,1fr)] overflow-hidden bg-black text-white transition-[grid-template-columns]" style={{ transitionDuration: "var(--sidebar-transition-duration)" }}>
             <SkipToContent />
             <SidebarAside>
               <div className="h-full">
@@ -71,8 +71,8 @@ export default function DashboardLayout({
                 <LicenseIndicator />
                 <MailboxSelector />
               </header>
-              <main id="main-content" tabIndex={-1} className={clsx("focus:outline-none page-flush min-h-0 min-w-0 flex-1 overflow-y-auto overscroll-contain rounded-tl-3xl max-md:rounded-t-3xl max-md:bg-white max-md:pb-24 px-6 py-10 scrollbar-gutter-stable lg:px-12", mobileTitle && "max-md:[&_h1]:sr-only")}>
-                <div className="w-full max-w-3xl">{children}</div>
+              <main id="main-content" tabIndex={-1} className={clsx("focus:outline-none page-flush min-h-0 min-w-0 flex-1 overflow-y-auto overscroll-contain bg-[#050505] rounded-tl-3xl max-md:rounded-t-3xl max-md:bg-[#050505] max-md:pb-24 px-6 py-10 scrollbar-gutter-stable lg:px-12", mobileTitle && "max-md:[&_h1]:sr-only")}>
+                <div className="w-full max-w-5xl">{children}</div>
               </main>
             </div>
             <FloatingComposer />

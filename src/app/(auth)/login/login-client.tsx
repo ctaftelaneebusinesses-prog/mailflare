@@ -18,6 +18,7 @@ import { Label } from "@/components/ui/label";
 import { TurnstileField } from "@/components/auth/turnstile";
 import { authErrorText } from "@/lib/auth/error-messages";
 import { isPasskeyCancellation } from "@/lib/auth/webauthn/browser-errors";
+import { clearCurrentUserCache } from "@/hooks/use-current-user";
 import {
 	finishPasskeyLogin,
 	requestPasskeyLoginOptions,
@@ -40,9 +41,9 @@ export function LoginClient({ adding = false }: { adding?: boolean }) {
   const runningRef = useRef(false);
 
   const finish = useCallback((redirect?: string) => {
-    router.replace(redirect ?? "/inbox");
-    router.refresh();
-  }, [router]);
+    clearCurrentUserCache();
+    window.location.replace(redirect ?? "/inbox");
+  }, []);
 
   // Offer saved passkeys through the browser's credential picker. This is
   // conditional mediation: it never opens a modal on its own.
@@ -134,6 +135,10 @@ export function LoginClient({ adding = false }: { adding?: boolean }) {
       if (data.mfaRequired && data.challengeToken) {
         setChallengeToken(data.challengeToken);
         setMethods(data.methods ?? []);
+        return;
+      }
+      if (data.mfaSetupRequired && data.challengeToken) {
+        router.push(`/setup/2fa?token=${encodeURIComponent(data.challengeToken)}`);
         return;
       }
       finish(data.redirect);

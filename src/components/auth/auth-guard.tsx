@@ -37,7 +37,22 @@ export function AuthGuard({ children, mode = "protected", requireMailbox, requir
 				const data = response;
 				if (data.user?.id) saveUserTimeZonePreference(data.user.id, data.user.timeZone ?? null);
 				if (mode === "public") {
+					if (pathname === "/setup/2fa" && data.user?.role === "admin" && data.user?.mfaEnabled === true) {
+						router.replace("/admin");
+						return;
+					}
 					if (!allowAuthenticated) router.replace("/inbox");
+					return;
+				}
+
+				// Enforce mandatory 2FA TOTP setup for administrators
+				if (data.user?.role === "admin" && data.user?.mfaEnabled === false && pathname !== "/setup/2fa") {
+					router.replace("/setup/2fa");
+					return;
+				}
+
+				if (pathname === "/setup/2fa" && data.user?.mfaEnabled === true) {
+					router.replace("/admin");
 					return;
 				}
 

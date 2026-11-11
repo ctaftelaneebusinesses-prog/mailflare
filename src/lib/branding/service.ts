@@ -4,8 +4,10 @@ import { appSettings } from "@/db/schema";
 import type { Branding } from "./types";
 import { getLicenseEntitlements } from "@/lib/licenses/service";
 
+import { CRAFTLANEE_CONFIG } from "@/config/branding";
+
 export const APP_SETTINGS_ID = "default";
-export const DEFAULT_APP_NAME = "Mailflare";
+export const DEFAULT_APP_NAME = CRAFTLANEE_CONFIG.appName;
 export const BRANDING_ICON_KEY = "branding/app-icon";
 
 export async function getBranding(env: CloudflareEnv): Promise<Branding> {
